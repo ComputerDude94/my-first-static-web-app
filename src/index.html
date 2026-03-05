@@ -1,17 +1,1444 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Vanilla JavaScript App</title>
+  <title>Kelly McGrory — Voice Actress</title>
+  <meta name="description" content="Professional voice actress bringing warmth, versatility, and polish to every performance.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:        hsl(38, 68%, 54%);
+      --gold-light:  hsl(38, 80%, 68%);
+      --gold-dim:    hsl(38, 50%, 38%);
+      --gold-glow:   hsla(38, 68%, 54%, 0.32);
+      --bg:          hsl(0, 0%, 5%);
+      --bg-alt:      hsl(0, 0%, 8%);
+      --surface:     hsl(0, 0%, 10%);
+      --card:        hsl(0, 0%, 12%);
+      --border:      hsl(0, 0%, 17%);
+      --border-gold: hsla(38, 68%, 54%, 0.22);
+      --text:        hsl(38, 12%, 88%);
+      --text-soft:   hsl(38, 8%, 72%);
+      --muted:       hsl(38, 6%, 50%);
+      --r:           10px;
+      --r-lg:        16px;
+      --nav-h:       72px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    img { display: block; max-width: 100%; }
+
+    /* ═══════════════════════════════════════════════════════
+       UTILITY
+    ═══════════════════════════════════════════════════════ */
+    .serif   { font-family: 'Playfair Display', serif; }
+    .gold    { color: var(--gold); }
+
+    .container    { max-width: 1140px; margin: 0 auto; padding: 0 2rem; }
+    .container-sm { max-width: 860px;  margin: 0 auto; padding: 0 2rem; }
+
+    .section-pad { padding: 6rem 0; }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 0.85rem;
+    }
+    .section-header p {
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    /* Scroll-reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ═══════════════════════════════════════════════════════
+       NAV
+    ═══════════════════════════════════════════════════════ */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      padding: 0 2.5rem;
+      transition: background 0.4s, backdrop-filter 0.4s, border-color 0.4s, box-shadow 0.4s;
+      border-bottom: 1px solid transparent;
+    }
+    #navbar.scrolled {
+      background: hsla(0, 0%, 5%, 0.93);
+      backdrop-filter: blur(20px);
+      border-color: var(--border);
+      box-shadow: 0 1px 24px hsla(0,0%,0%,0.4);
+    }
+    .nav-inner {
+      width: 100%;
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2.2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.25s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .btn-nav {
+      padding: 0.5rem 1.3rem;
+      background: var(--gold);
+      color: hsl(0,0%,7%);
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: box-shadow 0.3s, transform 0.2s;
+      white-space: nowrap;
+    }
+    .btn-nav:hover {
+      box-shadow: 0 0 24px -4px var(--gold-glow);
+      transform: translateY(-1px);
+    }
+
+    /* Hamburger */
+    .nav-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      z-index: 201;
+    }
+    .nav-toggle span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* Mobile drawer */
+    .nav-drawer {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: hsla(0,0%,4%,0.98);
+      backdrop-filter: blur(20px);
+      z-index: 199;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-drawer a:hover { color: var(--gold); }
+    .nav-drawer .btn-drawer {
+      margin-top: 0.5rem;
+      padding: 0.85rem 2.5rem;
+      background: var(--gold);
+      color: hsl(0,0%,7%);
+      border-radius: var(--r);
+      font-family: 'Jost', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════════════════ */
+    #home {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .hero-photo {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .hero-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+    }
+    .hero-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse 60% 80% at 72% 50%, hsl(38,18%,13%) 0%, hsl(0,0%,5%) 70%);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      padding-right: 10%;
+      gap: 1rem;
+    }
+    .hero-photo-placeholder-box {
+      width: min(340px, 38vw);
+      aspect-ratio: 3/4;
+      border: 2px dashed var(--border-gold);
+      border-radius: var(--r-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      color: var(--muted);
+      background: hsla(38,20%,10%,0.5);
+    }
+    .hero-photo-placeholder-box svg { opacity: 0.4; color: var(--gold); }
+    .hero-photo-placeholder-box span {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.55;
+      text-align: center;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(to right, hsl(0,0%,5%) 28%, hsla(0,0%,5%,0.72) 56%, hsla(0,0%,5%,0.15) 100%),
+        linear-gradient(to top,   hsl(0,0%,5%) 0%,  transparent 32%),
+        linear-gradient(to bottom,hsl(0,0%,5%) 0%,  transparent 16%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding-top: calc(var(--nav-h) + 4rem);
+      padding-bottom: 6rem;
+    }
+
+    .hero-inner {
+      max-width: 580px;
+      padding: 0 2rem;
+      margin-left: clamp(1.5rem, 8vw, 130px);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.95rem;
+      border: 1px solid var(--border-gold);
+      background: hsla(38,68%,54%,0.07);
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.75rem;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.8rem, 8.5vw, 7.5rem);
+      font-weight: 900;
+      line-height: 0.96;
+      letter-spacing: -0.01em;
+      margin-bottom: 1.4rem;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+
+    .hero-sub {
+      color: var(--text-soft);
+      font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+      max-width: 430px;
+      margin-bottom: 2.4rem;
+      line-height: 1.75;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.9rem 2rem;
+      background: var(--gold);
+      color: hsl(0,0%,7%);
+      border-radius: var(--r);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: box-shadow 0.3s, transform 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 34px -6px var(--gold-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.9rem 2rem;
+      background: transparent;
+      color: var(--gold);
+      border: 1.5px solid hsla(38,68%,54%,0.5);
+      border-radius: var(--r);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: border-color 0.25s, background 0.25s;
+      white-space: nowrap;
+    }
+    .btn-outline:hover {
+      border-color: var(--gold);
+      background: hsla(38,68%,54%,0.09);
+    }
+
+    .hero-scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--muted);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      animation: fadeIn 1s 0.9s ease both;
+    }
+    .hero-scroll-line {
+      width: 1px;
+      height: 32px;
+      background: linear-gradient(to bottom, var(--gold-dim), transparent);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       DEMOS
+    ═══════════════════════════════════════════════════════ */
+    #demos { background: var(--bg); }
+
+    .demo-filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 2.5rem;
+    }
+    .filter-btn {
+      padding: 0.48rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+    .filter-btn:hover { color: var(--text); border-color: var(--muted); }
+    .filter-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: hsl(0,0%,7%);
+    }
+
+    .demo-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .demo-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      transition: border-color 0.25s;
+    }
+    .demo-card:hover { border-color: var(--border-gold); }
+
+    .demo-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+    }
+
+    .play-btn {
+      width: 40px; height: 40px;
+      min-width: 40px;
+      border-radius: 50%;
+      background: hsla(38,68%,54%,0.1);
+      border: 1px solid var(--border-gold);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .play-btn:hover, .play-btn.active {
+      background: var(--gold);
+      color: hsl(0,0%,7%);
+      transform: scale(1.06);
+      box-shadow: 0 0 18px -4px var(--gold-glow);
+    }
+
+    .demo-meta { flex: 1; min-width: 0; }
+    .demo-meta h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .demo-meta span {
+      font-size: 0.67rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .demo-duration { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+
+    .dl-btn {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      padding: 0.3rem; display: flex;
+      align-items: center; transition: color 0.2s; flex-shrink: 0;
+    }
+    .dl-btn:hover { color: var(--gold); }
+
+    .demo-progress-row {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0 1.25rem 0.9rem;
+    }
+    .demo-progress-row.open { display: flex; }
+    .prog-time { font-size: 0.72rem; color: var(--muted); min-width: 30px; }
+    .prog-time.right { text-align: right; }
+    .prog-track {
+      flex: 1; height: 3px;
+      background: var(--border);
+      border-radius: 99px;
+      cursor: pointer; position: relative;
+    }
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--gold-dim), var(--gold));
+      border-radius: 99px; width: 0%;
+      transition: width 0.2s linear; pointer-events: none;
+    }
+    .prog-track::after {
+      content: ''; position: absolute;
+      top: 50%; left: var(--pct, 0%);
+      transform: translate(-50%, -50%);
+      width: 11px; height: 11px;
+      background: var(--gold); border-radius: 50%;
+      opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    }
+    .prog-track:hover::after { opacity: 1; }
+
+    /* Specs */
+    .specs-card {
+      margin-top: 3.5rem;
+      padding: 1.75rem 2rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+    }
+    .specs-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+    .spec-item {
+      padding: 0.85rem 1rem;
+      background: hsla(38,68%,54%,0.04);
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    .spec-label { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .spec-val { font-size: 0.9rem; font-weight: 600; margin-top: 0.3rem; }
+
+    /* ═══════════════════════════════════════════════════════
+       ABOUT
+    ═══════════════════════════════════════════════════════ */
+    #about { background: var(--bg-alt); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .headshot-wrap { position: relative; width: 100%; }
+
+    /* --- TO USE A REAL PHOTO:
+       Replace the .headshot-placeholder div with:
+       <img src="path/to/your-photo.jpg" alt="Kelly McGrory" class="headshot-img">
+    --- */
+    .headshot-img {
+      width: 100%; aspect-ratio: 3/4;
+      object-fit: cover; object-position: center top;
+      border-radius: var(--r-lg); display: block;
+    }
+    .headshot-placeholder {
+      width: 100%; aspect-ratio: 3/4;
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      border: 2px dashed var(--border-gold);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.75rem; color: var(--muted);
+    }
+    .headshot-placeholder svg { opacity: 0.35; color: var(--gold); }
+    .headshot-placeholder span {
+      font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; opacity: 0.55;
+      text-align: center; padding: 0 1.5rem; line-height: 1.7;
+    }
+
+    .headshot-deco {
+      position: absolute; bottom: -14px; right: -14px;
+      width: 80px; height: 80px;
+      border: 2px solid var(--border-gold);
+      border-radius: 10px; z-index: -1; pointer-events: none;
+    }
+    .headshot-wrap::before {
+      content: ''; position: absolute;
+      top: -14px; left: -14px;
+      width: 52px; height: 52px;
+      border-top: 2px solid var(--gold-dim);
+      border-left: 2px solid var(--gold-dim);
+      border-radius: 3px 0 0 0; pointer-events: none;
+    }
+
+    .about-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem;
+    }
+    .about-text p {
+      color: var(--text-soft);
+      margin-bottom: 1rem; line-height: 1.8; font-size: 0.98rem;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem; margin-top: 2.5rem;
+      padding-top: 2rem; border-top: 1px solid var(--border);
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem; font-weight: 700;
+      color: var(--gold); line-height: 1;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* ═══════════════════════════════════════════════════════
+       STUDIO
+    ═══════════════════════════════════════════════════════ */
+    #studio { background: var(--bg); }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: center;
+    }
+
+    /* --- TO USE A REAL STUDIO PHOTO:
+       Replace .studio-photo-placeholder with:
+       <img src="path/to/studio.jpg" alt="Recording studio" class="studio-img">
+    --- */
+    .studio-img {
+      width: 100%; aspect-ratio: 1/1;
+      object-fit: cover; border-radius: var(--r-lg);
+    }
+    .studio-photo-placeholder {
+      width: 100%; aspect-ratio: 1/1;
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      border: 2px dashed var(--border-gold);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.75rem; color: var(--muted);
+    }
+    .studio-photo-placeholder svg { opacity: 0.35; color: var(--gold); }
+    .studio-photo-placeholder span {
+      font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; opacity: 0.55;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr; gap: 0.85rem;
+    }
+    .feature-card {
+      padding: 1.15rem 1.25rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); transition: border-color 0.25s, transform 0.2s;
+    }
+    .feature-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+    .feature-icon { color: var(--gold); margin-bottom: 0.55rem; }
+    .feature-card h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .feature-card p  { font-size: 0.76rem; color: var(--muted); line-height: 1.4; }
+
+    /* ═══════════════════════════════════════════════════════
+       TESTIMONIALS
+    ═══════════════════════════════════════════════════════ */
+    #testimonials { background: var(--bg-alt); }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); gap: 1.25rem;
+    }
+    .t-card {
+      padding: 1.75rem 2rem 1.6rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      transition: border-color 0.25s, transform 0.25s;
+      display: flex; flex-direction: column;
+    }
+    .t-card:hover { border-color: var(--border-gold); transform: translateY(-3px); }
+    .t-quote-icon { color: hsla(38,68%,54%,0.22); margin-bottom: 1rem; }
+    .t-card blockquote {
+      flex: 1; font-style: italic;
+      color: var(--text-soft); line-height: 1.75;
+      margin-bottom: 1.4rem; font-size: 0.95rem;
+    }
+    .t-author strong { display: block; font-size: 0.92rem; font-weight: 600; }
+    .t-author span { font-size: 0.78rem; color: var(--muted); }
+
+    .trusted-by { margin-top: 4rem; text-align: center; }
+    .trusted-by-label {
+      font-size: 0.62rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem;
+    }
+    .brand-row {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; align-items: center;
+      gap: 1.5rem 3rem; opacity: 0.3;
+    }
+    .brand-row span {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CONTACT
+    ═══════════════════════════════════════════════════════ */
+    #contact { background: var(--bg); }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px; gap: 4rem; align-items: start;
+    }
+
+    .contact-form { display: flex; flex-direction: column; gap: 0.9rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .field label {
+      font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--r);
+      padding: 0.85rem 1rem;
+      font-family: 'Jost', sans-serif; font-size: 0.92rem;
+      color: var(--text); transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+    .form-select { appearance: none; cursor: pointer; color: var(--muted); }
+    .form-select.filled { color: var(--text); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px hsla(38,68%,54%,0.1);
+    }
+    .form-textarea { resize: vertical; min-height: 120px; }
+
+    .btn-submit {
+      padding: 0.95rem; background: var(--gold); color: hsl(0,0%,7%);
+      border: none; border-radius: var(--r);
+      font-family: 'Jost', sans-serif; font-size: 0.78rem;
+      font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      cursor: pointer; transition: box-shadow 0.3s, transform 0.2s; margin-top: 0.25rem;
+    }
+    .btn-submit:hover { box-shadow: 0 0 28px -6px var(--gold-glow); transform: translateY(-1px); }
+    .btn-submit.sent { background: hsl(145,50%,38%); color: #fff; pointer-events: none; }
+
+    .contact-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    .contact-card {
+      padding: 1.4rem 1.6rem; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--r-lg);
+    }
+    .contact-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; margin-bottom: 1rem;
+    }
+    .contact-line {
+      display: flex; align-items: center; gap: 0.7rem;
+      font-size: 0.87rem; color: var(--text-soft); margin-bottom: 0.65rem;
+    }
+    .contact-line:last-child { margin-bottom: 0; }
+    .contact-line svg { color: var(--gold); flex-shrink: 0; }
+    .avail-chip {
+      padding: 1.1rem 1.4rem;
+      background: hsla(38,68%,54%,0.06);
+      border: 1px solid var(--border-gold); border-radius: var(--r);
+      font-size: 0.86rem; color: var(--text-soft); line-height: 1.6;
+    }
+    .avail-chip strong { color: var(--gold); }
+
+    /* ═══════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════ */
+    footer { padding: 2rem; border-top: 1px solid var(--border); background: var(--bg); }
+    .footer-inner {
+      max-width: 1140px; margin: 0 auto;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem; font-weight: 700; color: var(--gold);
+    }
+    .footer-copy { font-size: 0.76rem; color: var(--muted); }
+    .footer-nav { display: flex; gap: 1.5rem; }
+    .footer-nav a { font-size: 0.78rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-nav a:hover { color: var(--gold); }
+
+    /* ═══════════════════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════ */
+
+    /* ≤ 1024 */
+    @media (max-width: 1024px) {
+      .about-grid { grid-template-columns: 280px 1fr; gap: 3rem; }
+      .contact-grid { grid-template-columns: 1fr 280px; gap: 2.5rem; }
+    }
+
+    /* ≤ 860 — tablet */
+    @media (max-width: 860px) {
+      :root { --nav-h: 64px; }
+      #navbar { padding: 0 1.5rem; }
+      .nav-links { display: none; }
+      .nav-toggle { display: flex; }
+
+      .section-pad { padding: 4.5rem 0; }
+
+      /* Hero */
+      .hero-photo-placeholder { align-items: center; padding: 0; justify-content: flex-end; }
+      .hero-photo-placeholder-box { width: min(260px, 50vw); }
+      .hero-inner { margin-left: 1.5rem; margin-right: 1.5rem; max-width: none; }
+      .hero-title { font-size: clamp(3rem, 10vw, 5rem); }
+
+      /* About */
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .headshot-wrap { max-width: 300px; margin: 0 auto; }
+
+      /* Studio */
+      .studio-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .studio-photo-placeholder { max-width: 480px; margin: 0 auto; }
+
+      /* Testimonials */
+      .testimonials-grid { grid-template-columns: 1fr; }
+
+      /* Contact */
+      .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .contact-sidebar { order: -1; }
+
+      /* Specs */
+      .specs-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ≤ 560 — mobile */
+    @media (max-width: 560px) {
+      .container, .container-sm { padding: 0 1.25rem; }
+      .section-pad { padding: 3.5rem 0; }
+
+      .hero-badge { font-size: 0.6rem; padding: 0.35rem 0.8rem; }
+      .hero-actions { flex-direction: column; align-items: flex-start; }
+      .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+
+      .form-row { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .about-stats { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+      .demo-duration { display: none; }
+
+      .footer-inner { flex-direction: column; align-items: center; text-align: center; }
+      .brand-row { gap: 1rem 2rem; }
+    }
+
+    /* ≤ 380 */
+    @media (max-width: 380px) {
+      .hero-title { font-size: 2.6rem; }
+      .specs-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
 </head>
-
 <body>
-  <main>
-    <h1>Vanilla JavaScript App</h1>
-  </main>
-</body>
 
+  <!-- ══ NAV ════════════════════════════════════════════════ -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#home" class="nav-logo">Kelly McGrory</a>
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#demos">Demos</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#studio">Studio</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#contact" class="btn-nav">Book Now</a></li>
+      </ul>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Drawer -->
+  <nav class="nav-drawer" id="navDrawer">
+    <a href="#home">Home</a>
+    <a href="#demos">Demos</a>
+    <a href="#about">About</a>
+    <a href="#studio">Studio</a>
+    <a href="#testimonials">Testimonials</a>
+    <a href="#contact">Contact</a>
+    <a href="#contact" class="btn-drawer">Book Now</a>
+  </nav>
+
+
+  <!-- ══ HERO ═══════════════════════════════════════════════ -->
+  <section id="home">
+
+    <!--
+      HERO BACKGROUND PHOTO
+      ─────────────────────
+      Option A — full-bleed background image (recommended):
+        Replace the entire .hero-photo div with:
+        <div class="hero-photo">
+          <img src="your-photo.jpg" alt="Kelly McGrory">
+        </div>
+
+      Option B — keep as-is and add your photo later.
+    -->
+    <div class="hero-photo">
+      <div class="hero-photo-placeholder">
+        <div class="hero-photo-placeholder-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Add your hero photo here<br>(full-bleed portrait)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          Available for Remote Sessions Worldwide
+        </div>
+        <h1 class="hero-title">
+          The Voice<br><span class="gold">That Moves</span>
+        </h1>
+        <p class="hero-sub">Professional voice actress bringing warmth, versatility, and polish to every performance. Commercial · Animation · Narration · Audiobook</p>
+        <div class="hero-actions">
+          <a href="#demos" class="btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            Listen Now
+          </a>
+          <a href="#contact" class="btn-outline">Book a Session</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <span>Scroll</span>
+      <div class="hero-scroll-line"></div>
+    </div>
+  </section>
+
+
+  <!-- ══ DEMOS ══════════════════════════════════════════════ -->
+  <section id="demos" class="section-pad">
+    <div class="container-sm">
+
+      <div class="section-header reveal">
+        <h2 class="serif">Voice <span class="gold">Demos</span></h2>
+        <p>Explore my range across commercial, animation, narration, and audiobook genres.</p>
+      </div>
+
+      <div class="demo-filters reveal">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="commercial">Commercial</button>
+        <button class="filter-btn" data-filter="animation">Animation</button>
+        <button class="filter-btn" data-filter="narration">Narration</button>
+        <button class="filter-btn" data-filter="audiobook">Audiobook</button>
+      </div>
+
+      <div class="demo-list reveal" id="demoList">
+
+        <!-- ── DEMO TRACK: set data-dur (seconds) and data-src (audio file path) ── -->
+
+        <div class="demo-card" data-category="audiobook" data-dur="90" data-src="">
+          <div class="demo-row">
+            <button class="play-btn" aria-label="Play Romance Novel Excerpt">
+              <svg class="icon-play" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg class="icon-pause" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="demo-meta"><h3>Romance Novel Excerpt</h3><span>Audiobook</span></div>
+            <span class="demo-duration">1:30</span>
+            <button class="dl-btn" title="Download"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></button>
+          </div>
+          <div class="demo-progress-row">
+            <span class="prog-time elapsed">0:00</span>
+            <div class="prog-track"><div class="prog-fill"></div></div>
+            <span class="prog-time right total">1:30</span>
+          </div>
+        </div>
+
+        <div class="demo-card" data-category="audiobook" data-dur="75" data-src="">
+          <div class="demo-row">
+            <button class="play-btn" aria-label="Play Thriller Novel Excerpt">
+              <svg class="icon-play" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg class="icon-pause" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="demo-meta"><h3>Thriller Novel Excerpt</h3><span>Audiobook</span></div>
+            <span class="demo-duration">1:15</span>
+            <button class="dl-btn" title="Download"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></button>
+          </div>
+          <div class="demo-progress-row">
+            <span class="prog-time elapsed">0:00</span>
+            <div class="prog-track"><div class="prog-fill"></div></div>
+            <span class="prog-time right total">1:15</span>
+          </div>
+        </div>
+
+        <div class="demo-card" data-category="commercial" data-dur="120" data-src="">
+          <div class="demo-row">
+            <button class="play-btn" aria-label="Play Commercial Reel">
+              <svg class="icon-play" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg class="icon-pause" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="demo-meta"><h3>Commercial Reel</h3><span>Commercial</span></div>
+            <span class="demo-duration">2:00</span>
+            <button class="dl-btn" title="Download"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></button>
+          </div>
+          <div class="demo-progress-row">
+            <span class="prog-time elapsed">0:00</span>
+            <div class="prog-track"><div class="prog-fill"></div></div>
+            <span class="prog-time right total">2:00</span>
+          </div>
+        </div>
+
+        <div class="demo-card" data-category="narration" data-dur="105" data-src="">
+          <div class="demo-row">
+            <button class="play-btn" aria-label="Play Documentary Narration">
+              <svg class="icon-play" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg class="icon-pause" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="demo-meta"><h3>Documentary Narration</h3><span>Narration</span></div>
+            <span class="demo-duration">1:45</span>
+            <button class="dl-btn" title="Download"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></button>
+          </div>
+          <div class="demo-progress-row">
+            <span class="prog-time elapsed">0:00</span>
+            <div class="prog-track"><div class="prog-fill"></div></div>
+            <span class="prog-time right total">1:45</span>
+          </div>
+        </div>
+
+        <div class="demo-card" data-category="animation" data-dur="80" data-src="">
+          <div class="demo-row">
+            <button class="play-btn" aria-label="Play Animation Character Reel">
+              <svg class="icon-play" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg class="icon-pause" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="demo-meta"><h3>Animation Character Reel</h3><span>Animation</span></div>
+            <span class="demo-duration">1:20</span>
+            <button class="dl-btn" title="Download"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></button>
+          </div>
+          <div class="demo-progress-row">
+            <span class="prog-time elapsed">0:00</span>
+            <div class="prog-track"><div class="prog-fill"></div></div>
+            <span class="prog-time right total">1:20</span>
+          </div>
+        </div>
+
+      </div><!-- /demo-list -->
+
+      <div class="specs-card reveal">
+        <h3 class="serif">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gold)"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>
+          Studio Specifications
+        </h3>
+        <div class="specs-grid">
+          <div class="spec-item"><div class="spec-label">Microphone</div><div class="spec-val">Neumann U87</div></div>
+          <div class="spec-item"><div class="spec-label">Interface</div><div class="spec-val">Apollo Twin X</div></div>
+          <div class="spec-item"><div class="spec-label">DAW</div><div class="spec-val">Pro Tools / Audacity</div></div>
+          <div class="spec-item"><div class="spec-label">Delivery</div><div class="spec-val">WAV · MP3 · AIFF</div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══ ABOUT ══════════════════════════════════════════════ -->
+  <section id="about" class="section-pad">
+    <div class="container">
+      <div class="about-grid">
+
+        <!--
+          HEADSHOT PHOTO
+          ──────────────
+          Replace the .headshot-placeholder div with your real photo:
+          <img src="your-headshot.jpg" alt="Kelly McGrory" class="headshot-img">
+        -->
+        <div class="headshot-wrap reveal">
+          <div class="headshot-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Replace with headshot photo<br>3 × 4 portrait ratio works best</span>
+          </div>
+          <div class="headshot-deco"></div>
+        </div>
+
+        <div class="about-text reveal">
+          <h2 class="serif">About <span class="gold">Kelly</span></h2>
+          <p>With over a decade of experience behind the microphone, I've lent my voice to national television campaigns, animated series, audiobooks, and corporate projects for brands across the globe.</p>
+          <p>My training in classical theater and improv gives me the range to shift from a warm, conversational read to a high-energy character performance in a single session.</p>
+          <p>I've had the privilege of working with studios like Pixar, Netflix, Audible, and dozens of independent creators. Whether it's a 30-second spot or a 12-hour audiobook, I bring the same dedication and craft.</p>
+          <div class="about-stats">
+            <div><div class="stat-num">500+</div><div class="stat-label">Projects</div></div>
+            <div><div class="stat-num">12+</div><div class="stat-label">Years</div></div>
+            <div><div class="stat-num">50+</div><div class="stat-label">Brands</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══ STUDIO ═════════════════════════════════════════════ -->
+  <section id="studio" class="section-pad">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <h2 class="serif">The <span class="gold">Studio</span></h2>
+        <p>A professionally treated home studio built for broadcast-quality recordings and live-directed sessions anywhere in the world.</p>
+      </div>
+
+      <div class="studio-grid">
+
+        <!--
+          STUDIO PHOTO
+          ────────────
+          Replace with your real studio photo:
+          <img src="your-studio.jpg" alt="Recording studio" class="studio-img">
+        -->
+        <div class="reveal">
+          <div class="studio-photo-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            <span>Replace with studio photo</span>
+          </div>
+        </div>
+
+        <div class="features-grid reveal">
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></div>
+            <h3>Neumann U87</h3><p>Industry-standard condenser mic</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <h3>Apollo Twin X</h3><p>Pristine audio conversion</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></div>
+            <h3>Pro Tools &amp; Audacity</h3><p>Professional DAW setup</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></div>
+            <h3>Source-Connect Ready</h3><p>Real-time remote sessions</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg></div>
+            <h3>Live Directed Sessions</h3><p>Via Zoom, Phone, or ISDN</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <h3>24–48hr Turnaround</h3><p>Rush delivery available</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══ TESTIMONIALS ═══════════════════════════════════════ -->
+  <section id="testimonials" class="section-pad">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <h2 class="serif">Client <span class="gold">Praise</span></h2>
+        <p>Trusted by the world's leading studios, agencies, and publishers.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="t-card reveal">
+          <div class="t-quote-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg></div>
+          <blockquote>"Kelly's read was perfect on the first take. She brought an emotional depth to our campaign that elevated the entire project."</blockquote>
+          <div class="t-author"><strong>Sarah Chen</strong><span>Creative Director, Ogilvy</span></div>
+        </div>
+        <div class="t-card reveal">
+          <div class="t-quote-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg></div>
+          <blockquote>"Working with Kelly is effortless. She takes direction beautifully and always delivers beyond expectations. A true professional."</blockquote>
+          <div class="t-author"><strong>Marcus Rivera</strong><span>Senior Producer, Netflix Animation</span></div>
+        </div>
+        <div class="t-card reveal">
+          <div class="t-quote-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg></div>
+          <blockquote>"We've used Kelly for three audiobook series. Her character work is extraordinary — listeners consistently mention her performance in reviews."</blockquote>
+          <div class="t-author"><strong>Emma Blackwell</strong><span>Executive Editor, Audible Studios</span></div>
+        </div>
+        <div class="t-card reveal">
+          <div class="t-quote-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg></div>
+          <blockquote>"Fast turnaround, broadcast-quality audio, and a voice that sells. Kelly is our go-to for every national spot."</blockquote>
+          <div class="t-author"><strong>David Park</strong><span>VP Marketing, Procter &amp; Gamble</span></div>
+        </div>
+      </div>
+
+      <div class="trusted-by reveal">
+        <p class="trusted-by-label">Trusted By</p>
+        <div class="brand-row">
+          <span>Netflix</span><span>Audible</span><span>Pixar</span>
+          <span>P&amp;G</span><span>BBC</span><span>Disney</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══ CONTACT ════════════════════════════════════════════ -->
+  <section id="contact" class="section-pad">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <h2 class="serif">Let's <span class="gold">Connect</span></h2>
+        <p>Ready to bring your project to life? Send me the details and I'll get back to you within 24 hours.</p>
+      </div>
+
+      <div class="contact-grid">
+
+        <form class="contact-form reveal" id="contactForm">
+          <div class="form-row">
+            <div class="field">
+              <label for="fname">Your Name</label>
+              <input id="fname" type="text" class="form-input" placeholder="Jane Smith" required>
+            </div>
+            <div class="field">
+              <label for="femail">Email Address</label>
+              <input id="femail" type="email" class="form-input" placeholder="jane@example.com" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="fproject">Project Type</label>
+            <select id="fproject" class="form-select">
+              <option value="">Select a type…</option>
+              <option>Commercial</option>
+              <option>Animation</option>
+              <option>Narration</option>
+              <option>Audiobook</option>
+              <option>Corporate / E-Learning</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fmsg">Project Details</label>
+            <textarea id="fmsg" class="form-textarea" placeholder="Timeline, tone, word count, deadline…"></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="submitBtn">Send Inquiry</button>
+        </form>
+
+        <div class="contact-sidebar reveal">
+          <div class="contact-card">
+            <h3 class="serif">Direct Contact</h3>
+            <div class="contact-line">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              kelly@kellymcgrory.com
+            </div>
+            <div class="contact-line">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              +1 (310) 555-0187
+            </div>
+            <div class="contact-line">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+              Los Angeles, CA
+            </div>
+          </div>
+
+          <div class="contact-card">
+            <h3 class="serif">Agent</h3>
+            <div class="contact-line" style="flex-direction:column;align-items:flex-start;gap:0.3rem;">
+              <strong style="color:var(--text)">Talent Agency Representation</strong>
+              <span>agent@talentagency.com</span>
+              <span>+1 (212) 555-0299</span>
+            </div>
+          </div>
+
+          <div class="avail-chip">
+            <strong>Currently available</strong> for new projects.<br>
+            Rush turnaround available upon request.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══ FOOTER ═════════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">Kelly McGrory</div>
+      <p class="footer-copy">© 2026 Kelly McGrory · Professional Voice Actress · All rights reserved.</p>
+      <nav class="footer-nav">
+        <a href="#demos">Demos</a>
+        <a href="#about">About</a>
+        <a href="#studio">Studio</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+
+  <!-- ══ JS ═════════════════════════════════════════════════ -->
+  <script>
+  (() => {
+    /* ── Navbar scroll ── */
+    const navbar = document.getElementById('navbar');
+    const tick = () => navbar.classList.toggle('scrolled', window.scrollY > 50);
+    window.addEventListener('scroll', tick, { passive: true });
+    tick();
+
+    /* ── Mobile nav ── */
+    const toggle = document.getElementById('navToggle');
+    const drawer = document.getElementById('navDrawer');
+    toggle.addEventListener('click', () => {
+      const open = drawer.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    });
+    drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      toggle.classList.remove('open');
+      document.body.style.overflow = '';
+    }));
+
+    /* ── Scroll-reveal ── */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    /* ── Demo filters ── */
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const f = btn.dataset.filter;
+        document.querySelectorAll('.demo-card').forEach(c => {
+          c.style.display = (f === 'all' || c.dataset.category === f) ? '' : 'none';
+        });
+      });
+    });
+
+    /* ── Demo player ── */
+    const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+    let activeCard = null, ticker = null, elapsed = 0;
+
+    function stopActive() {
+      if (ticker) { clearInterval(ticker); ticker = null; }
+      if (activeCard) {
+        activeCard.querySelector('.play-btn').classList.remove('active');
+        activeCard.querySelector('.icon-play').style.display  = '';
+        activeCard.querySelector('.icon-pause').style.display = 'none';
+        activeCard.querySelector('.demo-progress-row').classList.remove('open');
+        activeCard = null;
+      }
+      elapsed = 0;
+    }
+
+    document.querySelectorAll('.demo-card').forEach(card => {
+      const pb    = card.querySelector('.play-btn');
+      const pRow  = card.querySelector('.demo-progress-row');
+      const fill  = card.querySelector('.prog-fill');
+      const track = card.querySelector('.prog-track');
+      const elEl  = card.querySelector('.prog-time.elapsed');
+      const dur   = +card.dataset.dur;
+
+      pb.addEventListener('click', () => {
+        if (activeCard === card) { stopActive(); return; }
+        stopActive();
+        activeCard = card; elapsed = 0;
+        pb.classList.add('active');
+        pb.querySelector('.icon-play').style.display  = 'none';
+        pb.querySelector('.icon-pause').style.display = '';
+        pRow.classList.add('open');
+
+        ticker = setInterval(() => {
+          elapsed++;
+          if (elapsed >= dur) { stopActive(); return; }
+          const pct = (elapsed / dur) * 100;
+          fill.style.width = pct + '%';
+          track.style.setProperty('--pct', pct + '%');
+          elEl.textContent = fmt(elapsed);
+        }, 1000);
+      });
+
+      track.addEventListener('click', e => {
+        if (activeCard !== card) return;
+        const r = track.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        elapsed = Math.floor(pct * dur);
+        fill.style.width = (pct * 100) + '%';
+        track.style.setProperty('--pct', (pct * 100) + '%');
+        elEl.textContent = fmt(elapsed);
+      });
+    });
+
+    /* ── Contact form ── */
+    document.getElementById('contactForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'Message Sent ✓';
+      btn.classList.add('sent');
+      setTimeout(() => { btn.textContent = 'Send Inquiry'; btn.classList.remove('sent'); e.target.reset(); }, 3500);
+    });
+
+    document.querySelectorAll('.form-select').forEach(s => {
+      s.addEventListener('change', () => s.classList.toggle('filled', s.value !== ''));
+    });
+
+  })();
+  </script>
+
+</body>
 </html>
